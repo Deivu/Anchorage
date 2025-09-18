@@ -55,12 +55,13 @@ impl Anchorage {
             let name = info.name.clone();
 
             let (node, handle) = Node::new(NodeManagerOptions {
-                client: self.clone(),
                 name: info.name,
                 host: info.host,
                 port: info.port,
                 auth: info.auth,
                 id: user_id,
+                agent: self.agent.clone(),
+                nodes: self.nodes.clone(),
                 request: self.request.clone(),
             })
             .await?;
@@ -125,7 +126,7 @@ impl Anchorage {
             agent: self.agent.clone(),
             node: node.clone(),
             guild_id,
-            connection,
+            connection: connection.into(),
         })
         .await?;
 

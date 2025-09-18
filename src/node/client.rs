@@ -13,7 +13,6 @@ use tokio_tungstenite::tungstenite::Error as TungsteniteError;
 use tokio_tungstenite::tungstenite::handshake::client::Request;
 use tokio_tungstenite::tungstenite::handshake::client::generate_key;
 
-use crate::Anchorage;
 use crate::model::node::{LavalinkMessage, Stats};
 use crate::model::player::{EventType, PlayerEvents};
 use crate::model::error::LavalinkNodeError;

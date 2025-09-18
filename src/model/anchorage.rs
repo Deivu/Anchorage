@@ -27,5 +27,5 @@ pub struct Options {
 pub struct Anchorage {
     pub agent: String,
     pub nodes: Arc<HashMap<String, Node>>,
-    crate request: Client,
+    pub(crate) request: Client,
 }
