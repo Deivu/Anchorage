@@ -1,5 +1,6 @@
 use std::{result::Result, time::Duration};
 use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded};
+use futures::stream::StreamExt;
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
