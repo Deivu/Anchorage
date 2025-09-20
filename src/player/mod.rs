@@ -6,13 +6,13 @@ use crate::node::client::Node;
 use crate::model::player::{
     EventType, LavalinkFilters, LavalinkPlayer, LavalinkVoice, PlayerOptions, UpdatePlayerTrack,
 };
-use crate::model::anchorage::ConnectionOption;
+use crate::model::anchorage::ConnectionOptions;
 use crate::model::error::LavalinkPlayerError;
 
 pub struct CreatePlayerOptions {
     pub agent: String,
     pub node: Node,
-    pub connection: ConnectionOption,
+    pub connection: ConnectionOptions,
     pub guild_id: u64,
 }
 
@@ -138,7 +138,7 @@ impl Player {
 
     pub async fn update_connection(
         &self,
-        connection: ConnectionOption,
+        connection: ConnectionOptions,
     ) -> Result<(), LavalinkPlayerError> {
         let voice = LavalinkVoice {
             token: connection.token,

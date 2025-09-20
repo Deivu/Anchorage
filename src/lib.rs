@@ -6,16 +6,22 @@ use std::fmt::{Debug, Formatter};
 use std::result::Result;
 use std::sync::Arc;
 
-use crate::model::anchorage::{Anchorage, Options, NodeOptions, ConnectionOption};
+use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, ConnectionOptions};
 use crate::model::error::LavalinkError;
 use crate::model::player::EventType;
-use crate::node::client::{Node, NodeManagerOptions};
+use crate::node::client::Node;
 use crate::player::CreatePlayerOptions;
 use crate::player::Player;
 
 pub mod model;
 pub mod node;
 pub mod player;
+
+pub struct Anchorage {
+    pub agent: String,
+    pub nodes: Arc<ConcurrentHashMap<String, Node>>,
+    pub(crate) request: ReqwestClient,
+}
 
 impl Debug for Anchorage {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -116,7 +122,7 @@ impl Anchorage {
         &self,
         guild_id: u64,
         node: Node,
-        connection: impl Into<ConnectionOption>,
+        connection: impl Into<ConnectionOptions>,
     ) -> Result<(Player, Receiver<EventType>), LavalinkError> {
         if self.get_node_for_player(guild_id).await.is_some() {
             return Err(LavalinkError::CreateExistingPlayer);

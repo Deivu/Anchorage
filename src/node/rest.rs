@@ -8,14 +8,7 @@ use tokio::sync::RwLock;
 use crate::model::error::LavalinkRestError;
 use crate::model::node::{LavalinkInfo, RoutePlanner, SessionInfo, Stats};
 use crate::model::player::{DataType, LavalinkPlayer, PlayerOptions, Track};
-
-pub struct RestOptions {
-    pub request: Client,
-    pub url: String,
-    pub auth: String,
-    pub agent: String,
-    pub session_id: Arc<RwLock<Option<String>>>,
-}
+use crate::model::anchorage::RestOptions;
 
 #[derive(Clone, Debug)]
 pub struct Rest {

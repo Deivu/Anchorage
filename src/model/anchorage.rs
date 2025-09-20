@@ -1,9 +1,32 @@
 use std::sync::Arc;
 use reqwest::Client;
-use scc::HashMap;
+use tokio::sync::RwLock;
+use reqwest::Client as ReqwestClient;
+use scc::HashMap as ConcurrentHashMap;
+
 use crate::node::client::Node;
 
-pub struct ConnectionOption {
+#[derive(Clone)]
+pub struct NodeManagerOptions {
+    pub name: String,
+    pub host: String,
+    pub port: u32,
+    pub auth: String,
+    pub id: u64,
+    pub request: ReqwestClient,
+    pub nodes: Arc<ConcurrentHashMap<String, Node>>,
+    pub agent: String,
+}
+
+pub struct RestOptions {
+    pub request: Client,
+    pub url: String,
+    pub auth: String,
+    pub agent: String,
+    pub session_id: Arc<RwLock<Option<String>>>,
+}
+
+pub struct ConnectionOptions {
     pub channel_id: Option<u64>,
     pub endpoint: String,
     pub guild_id: u64,
@@ -22,10 +45,4 @@ pub struct NodeOptions {
 pub struct Options {
     pub agent: String,
     pub request: Option<Client>,
-}
-
-pub struct Anchorage {
-    pub agent: String,
-    pub nodes: Arc<HashMap<String, Node>>,
-    pub(crate) request: Client,
 }

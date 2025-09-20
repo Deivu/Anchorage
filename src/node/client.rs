@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use std::result::Result;
 use std::sync::Arc;
 use std::time::Duration;
-use reqwest::Client as RequestClient;
 use tokio::sync::RwLock;
 use tokio::sync::oneshot::{Sender as TokioOneshotSender, channel};
 use tokio::task::JoinHandle;
@@ -13,6 +12,7 @@ use tokio_tungstenite::tungstenite::Error as TungsteniteError;
 use tokio_tungstenite::tungstenite::handshake::client::Request;
 use tokio_tungstenite::tungstenite::handshake::client::generate_key;
 
+use crate::model::anchorage::NodeManagerOptions;
 use crate::model::node::{LavalinkMessage, Stats};
 use crate::model::player::{EventType, PlayerEvents};
 use crate::model::error::LavalinkNodeError;
@@ -39,18 +39,6 @@ pub struct NodeManagerData {
     pub url: String,
     pub penalties: f64,
     pub statistics: Option<Stats>,
-}
-
-#[derive(Clone)]
-pub struct NodeManagerOptions {
-    pub name: String,
-    pub host: String,
-    pub port: u32,
-    pub auth: String,
-    pub id: u64,
-    pub request: RequestClient,
-    pub nodes: Arc<ConcurrentHashMap<String, Node>>,
-    pub agent: String,
 }
 
 pub struct NodeManager {
