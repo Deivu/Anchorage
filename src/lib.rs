@@ -34,7 +34,7 @@ impl Debug for Anchorage {
 impl Anchorage {
     pub fn new(mut options: Options) -> Self {
         Self {
-            agent: String::from("Kashima/5.0.0-dev"),
+            agent: String::from(format!("Anchorage/{}", env!("CARGO_PKG_VERSION"))),
             nodes: Arc::new(ConcurrentHashMap::new()),
             request: options
                 .request
