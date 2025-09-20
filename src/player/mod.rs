@@ -2,36 +2,28 @@ use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded};
 use serde_json::Value;
 use std::result::Result;
 
-use crate::node::client::Node;
-use crate::model::player::{
-    EventType, LavalinkFilters, LavalinkPlayer, LavalinkVoice, PlayerOptions, UpdatePlayerTrack,
-};
-use crate::model::anchorage::ConnectionOptions;
+use crate::model::anchorage::{ConnectionOptions, PlayerOptions};
 use crate::model::error::LavalinkPlayerError;
-
-pub struct CreatePlayerOptions {
-    pub agent: String,
-    pub node: Node,
-    pub connection: ConnectionOptions,
-    pub guild_id: u64,
-}
+use crate::model::player::{
+    EventType, LavalinkFilters, LavalinkPlayer, LavalinkPlayerOptions, LavalinkVoice,
+    UpdatePlayerTrack,
+};
+use crate::node::client::Node;
 
 pub struct Player {
     pub guild_id: u64,
     node: Node,
-    agent: String,
 }
 
 impl Player {
     pub async fn new(
-        options: CreatePlayerOptions,
+        options: PlayerOptions,
     ) -> Result<(Self, FlumeSender<EventType>, FlumeReceiver<EventType>), LavalinkPlayerError> {
         let (events_sender, events_receiver) = unbounded::<EventType>();
 
         let player = Self {
             guild_id: options.guild_id,
             node: options.node,
-            agent: options.agent,
         };
 
         player.update_connection(options.connection).await?;
@@ -44,7 +36,7 @@ impl Player {
     }
 
     pub async fn play(&self, track: String) -> Result<(), LavalinkPlayerError> {
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
 
         let _ = update_track.encoded.insert(Value::String(track));
@@ -57,7 +49,7 @@ impl Player {
     }
 
     pub async fn stop(&self) -> Result<(), LavalinkPlayerError> {
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
 
         let _ = update_track.encoded.insert(Value::Null);
@@ -78,7 +70,7 @@ impl Player {
     pub async fn pause(&self) -> Result<(), LavalinkPlayerError> {
         let data = self.get_data().await?;
 
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.paused.insert(!data.paused);
 
@@ -88,7 +80,7 @@ impl Player {
     }
 
     pub async fn update_volume(&self, volume: u32) -> Result<(), LavalinkPlayerError> {
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.volume.insert(volume);
 
@@ -98,7 +90,7 @@ impl Player {
     }
 
     pub async fn update_position(&mut self, position: u32) -> Result<(), LavalinkPlayerError> {
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.position.insert(position);
 
@@ -115,7 +107,7 @@ impl Player {
 
         filters.merge(data.filters.clone());
 
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.filters.insert(filters);
 
@@ -127,7 +119,7 @@ impl Player {
     pub async fn clear_filters(&self) -> Result<(), LavalinkPlayerError> {
         let filters = Default::default();
 
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.filters.insert(filters);
 
@@ -148,7 +140,7 @@ impl Player {
             ping: None,
         };
 
-        let mut options: PlayerOptions = Default::default();
+        let mut options: LavalinkPlayerOptions = Default::default();
 
         let _ = options.voice.insert(voice);
 
@@ -160,7 +152,7 @@ impl Player {
     async fn send_update_player(
         &self,
         no_replace: bool,
-        options: PlayerOptions,
+        options: LavalinkPlayerOptions,
     ) -> Result<(), LavalinkPlayerError> {
         self.node
             .rest

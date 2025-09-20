@@ -2,7 +2,6 @@ use std::sync::Arc;
 use reqwest::Client;
 use tokio::sync::RwLock;
 use reqwest::Client as ReqwestClient;
-use scc::HashMap as ConcurrentHashMap;
 
 use crate::node::client::Node;
 
@@ -14,7 +13,6 @@ pub struct NodeManagerOptions {
     pub auth: String,
     pub id: u64,
     pub request: ReqwestClient,
-    pub nodes: Arc<ConcurrentHashMap<String, Node>>,
     pub agent: String,
 }
 
@@ -24,6 +22,12 @@ pub struct RestOptions {
     pub auth: String,
     pub agent: String,
     pub session_id: Arc<RwLock<Option<String>>>,
+}
+
+pub struct PlayerOptions {
+    pub node: Node,
+    pub connection: ConnectionOptions,
+    pub guild_id: u64,
 }
 
 pub struct ConnectionOptions {

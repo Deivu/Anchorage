@@ -277,7 +277,7 @@ pub struct UpdatePlayerTrack {
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PlayerOptions {
+pub struct LavalinkPlayerOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub track: Option<UpdatePlayerTrack>,
     #[serde(skip_serializing_if = "Option::is_none")]

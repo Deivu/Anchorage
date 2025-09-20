@@ -6,11 +6,10 @@ use std::fmt::{Debug, Formatter};
 use std::result::Result;
 use std::sync::Arc;
 
-use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, ConnectionOptions};
+use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, PlayerOptions, ConnectionOptions};
 use crate::model::error::LavalinkError;
 use crate::model::player::EventType;
 use crate::node::client::Node;
-use crate::player::CreatePlayerOptions;
 use crate::player::Player;
 
 pub mod model;
@@ -67,7 +66,6 @@ impl Anchorage {
                 auth: info.auth,
                 id: user_id,
                 agent: self.agent.clone(),
-                nodes: self.nodes.clone(),
                 request: self.request.clone(),
             })
             .await?;
@@ -128,8 +126,7 @@ impl Anchorage {
             return Err(LavalinkError::CreateExistingPlayer);
         }
 
-        let (player, events_sender, events_receiver) = Player::new(CreatePlayerOptions {
-            agent: self.agent.clone(),
+        let (player, events_sender, events_receiver) = Player::new(PlayerOptions {
             node: node.clone(),
             guild_id,
             connection: connection.into(),

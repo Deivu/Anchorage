@@ -13,10 +13,11 @@ use tokio_tungstenite::tungstenite::handshake::client::Request;
 use tokio_tungstenite::tungstenite::handshake::client::generate_key;
 
 use crate::model::anchorage::NodeManagerOptions;
+use crate::model::error::LavalinkNodeError;
 use crate::model::node::{LavalinkMessage, Stats};
 use crate::model::player::{EventType, PlayerEvents};
-use crate::model::error::LavalinkNodeError;
-use crate::node::rest::{Rest, RestOptions};
+use crate::model::anchorage::RestOptions;
+use crate::node::rest::Rest;
 use crate::node::websocket::Connection;
 
 pub enum WebsocketCommand {
@@ -31,7 +32,6 @@ pub enum NodeManagerCommands {
     Message(Result<Option<LavalinkMessage>, TungsteniteError>),
 }
 
-#[derive(Clone, Debug)]
 pub struct NodeManagerData {
     pub name: String,
     pub auth: String,
@@ -42,16 +42,33 @@ pub struct NodeManagerData {
 }
 
 pub struct NodeManager {
-    pub data: NodeManagerData,
-    pub event_senders: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
+    pub name: String,
+    pub auth: String,
+    pub id: u64,
+    pub url: String,
+    pub penalties: f64,
+    pub statistics: Option<Stats>,
     pub session_id: Arc<RwLock<Option<String>>>,
+    pub event_senders: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
     agent: String,
-    nodes: Arc<ConcurrentHashMap<String, Node>>,
     receiver: FlumeReceiver<NodeManagerCommands>,
     connection: Connection,
     destroyed: bool,
     reconnects: usize,
     handles: Vec<JoinHandle<()>>,
+}
+
+impl From<&NodeManager> for NodeManagerData {
+    fn from(value: &NodeManager) -> Self {
+        NodeManagerData {
+            name: value.name.clone(),
+            auth: value.auth.clone(),
+            id: value.id,
+            url: value.url.clone(),
+            penalties: value.penalties,
+            statistics: value.statistics.clone(),
+        }
+    }
 }
 
 impl NodeManager {
@@ -64,19 +81,15 @@ impl NodeManager {
         let (node_sender, node_receiver) = unbounded::<NodeManagerCommands>();
 
         let mut manager = Self {
-            data: NodeManagerData {
-                name: options.name,
-                auth: options.auth,
-                id: options.id,
-                url: format!("ws://{}:{}/v4/websocket", options.host, options.port),
-                penalties: 0.0,
-                statistics: None,
-            },
-            // I decided to make these two variables shared to reduce complexity
-            event_senders: Arc::new(ConcurrentHashMap::new()),
+            name: options.name,
+            auth: options.auth,
+            id: options.id,
+            url: format!("ws://{}:{}/v4/websocket", options.host, options.port),
+            penalties: 0.0,
+            statistics: None,
             session_id: Arc::new(RwLock::new(None)),
+            event_senders: Arc::new(ConcurrentHashMap::new()),
             agent: options.agent,
-            nodes: options.nodes,
             receiver: node_receiver,
             connection: websocket_connection,
             destroyed: false,
@@ -84,7 +97,7 @@ impl NodeManager {
             handles: Vec::new(),
         };
 
-        let name = manager.data.name.clone();
+        let name = manager.name.clone();
         let sender = node_sender.clone();
 
         manager.handles.push(tokio::spawn(async move {
@@ -98,7 +111,7 @@ impl NodeManager {
             tracing::debug!("Lavalink Node {} stopped on listening for commands", name);
         }));
 
-        let name = manager.data.name.clone();
+        let name = manager.name.clone();
         let sender = node_sender.clone();
 
         manager.handles.push(tokio::spawn(async move {
@@ -161,7 +174,8 @@ impl NodeManager {
                 sender.send(()).ok();
             }
             WebsocketCommand::GetData(sender) => {
-                sender.send(Ok(self.data.clone())).ok();
+                let me = &*self;
+                sender.send(Ok(me.into())).ok();
             }
         }
 
@@ -182,7 +196,7 @@ impl NodeManager {
             return Ok(());
         };
 
-        tracing::debug!("Lavalink Node {} received a message!", self.data.name);
+        tracing::debug!("Lavalink Node {} received a message!", self.name);
 
         match message {
             LavalinkMessage::Ready(data) => {
@@ -196,7 +210,7 @@ impl NodeManager {
 
                 tracing::info!(
                     "Lavalink Node {} is now ready! [Resumed: {}] [Session Id: {}]",
-                    self.data.name,
+                    self.name,
                     data.resumed,
                     data.session_id
                 );
@@ -206,7 +220,7 @@ impl NodeManager {
             LavalinkMessage::Stats(data) => {
                 let mut penalties: f64 = 0.0;
 
-                let _ = self.data.statistics.insert(data.clone());
+                let _ = self.statistics.insert(data.clone());
 
                 penalties += data.players as f64;
                 penalties += f64::powf(1.05, 100.0 * data.cpu.system_load).round();
@@ -216,7 +230,7 @@ impl NodeManager {
                     penalties += (data.frame_stats.clone().unwrap().nulled as f64) * 2.0;
                 }
 
-                self.data.penalties = penalties;
+                self.penalties = penalties;
 
                 Ok(())
             }
@@ -251,20 +265,20 @@ impl NodeManager {
             let key = generate_key();
             let mut request = Request::builder()
                 .method("GET")
-                .header("Host", &self.data.url)
+                .header("Host", &self.url)
                 .header("Connection", "Upgrade")
                 .header("Upgrade", "websocket")
                 .header("Sec-WebSocket-Version", "13")
                 .header("Sec-WebSocket-Key", &key)
-                .uri(&self.data.url)
+                .uri(&self.url)
                 .body(())?;
 
             let pairs: &mut HashMap<&str, &String> = &mut HashMap::new();
 
-            let id = self.data.id.to_string();
+            let id = self.id.to_string();
 
             pairs.insert("User-Id", &id);
-            pairs.insert("Authorization", &self.data.auth);
+            pairs.insert("Authorization", &self.auth);
 
             let session_id = match &self.session_id.read().await.as_ref() {
                 Some(session_id) => String::from(*session_id),
@@ -285,8 +299,8 @@ impl NodeManager {
 
             tracing::debug!(
                 "Lavalink Node {} Connecting to {} [Retries: {}]",
-                self.data.name,
-                self.data.url,
+                self.name,
+                self.url,
                 self.reconnects
             );
 
@@ -301,8 +315,8 @@ impl NodeManager {
 
                 tracing::debug!(
                     "Lavalink Node {} failed to connect to {}. Waiting for {} second(s)",
-                    self.data.name,
-                    self.data.url,
+                    self.name,
+                    self.url,
                     duration.as_secs()
                 );
 
@@ -329,7 +343,7 @@ impl NodeManager {
 
         self.reconnects = 0;
 
-        tracing::info!("Lavalink Node {} Disconnected...", self.data.name);
+        tracing::info!("Lavalink Node {} Disconnected...", self.name);
     }
 
     #[tracing::instrument(skip(self))]
@@ -374,18 +388,18 @@ impl Node {
         let handle = tokio::spawn(async move {
             tracing::debug!(
                 "Lavalink Node {} started to listen for websocket and commands",
-                manager.data.name
+                manager.name
             );
 
             if let Err(error) = manager.start().await {
                 tracing::error!(
                     "Lavalink Node {} threw an unrecoverable error. Cleaning up! => {:?}",
-                    manager.data.name,
+                    manager.name,
                     error
                 );
             }
 
-            manager.data.name
+            manager.name
         });
 
         Ok((node, handle))

@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 
 use crate::model::error::LavalinkRestError;
 use crate::model::node::{LavalinkInfo, RoutePlanner, SessionInfo, Stats};
-use crate::model::player::{DataType, LavalinkPlayer, PlayerOptions, Track};
+use crate::model::player::{DataType, LavalinkPlayer, LavalinkPlayerOptions, Track};
 use crate::model::anchorage::RestOptions;
 
 #[derive(Clone, Debug)]
@@ -86,7 +86,7 @@ impl Rest {
         &self,
         guild_id: u64,
         no_replace: bool,
-        options: PlayerOptions,
+        options: LavalinkPlayerOptions,
     ) -> Result<LavalinkPlayer, LavalinkRestError> {
         let request = self
             .request
