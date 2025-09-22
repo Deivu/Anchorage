@@ -105,11 +105,13 @@ if tracks.len() == 0 {
 
 /// spawn a new green thread to handle your player events so you wont block the current thread you are on
 tokio::spawn(async move {
+    /// event has two types, EventType::Player and EventType::Destroyed
+    /// the EventType::Player is events from lavalink itself
+    /// the EventType::Destroyed is event from a node when it's destroyed
     let event = events.recv_async().await.unwrap();
     
     match event {
         EventType::Player(player_events) => {
-        
             match player_events {
                 PlayerEvents::TrackStartEvent(_) => {
                     /// do something
@@ -121,7 +123,9 @@ tokio::spawn(async move {
             
         }
         EventType::Destroyed => {
-            /// clean up your player as the node where this player is destroyed, or move your player, your call
+            /// When this player node is destroyed
+            /// It's up to developers implementation on how they handle this
+            /// Cleanup, or move the player you have, up to you
         }
     }
 });
