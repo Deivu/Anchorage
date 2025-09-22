@@ -26,7 +26,7 @@ anchorage = { git = "https://github.com/Deivu/Anchorage.git", version = "0.1.0" 
 
 ```rs
 use anchorage::Anchorage;
-use anchorage::model::player::{DataType, EventType, PlayerEvents};
+use anchorage::model::player::{DataType, EventType, LavalinkVoice, LavalinkPlayerOptions, PlayerEvents};
 use anchorage::model::anchorage::{Options, NodeOptions, ConnectionOptions};
 
 /// supplying none on these options defaults it to it's default value
@@ -128,6 +128,46 @@ tokio::spawn(async move {
 
 /// play the resolved track
 player.play(tracks[0].encoded.clone()).await.unwrap();
+```
+
+* Handling voice server changes (Channel moves & Channel voice server changes)
+```rs
+/// Partial Disord gateway packet for voice state update
+pub struct VoiceStatePartial {
+	channel_id?: Option<String>,
+	session_id: String,
+	self_deaf: bool,
+	self_mute: bool,
+}
+
+/// Disord gateway packet for voice server update
+pub struct VoiceServerUpdateEvent {
+    pub token: String,
+    pub guild_id: Option<u64>,
+    pub endpoint: Option<String>,
+}
+
+async handle(state: VoiceStatePartial, server: VoiceServerUpdateEvent) {
+    let id = server.guild_id.unwrap().clone();
+    let node = anchorage.get_node_for_player(id).await.unwrap();
+    
+    let voice = LavalinkVoice {
+        token: server.token,
+        endpoint: server.endpoint,
+        session_id: state.session_id,
+        connected: None,
+        ping: None,
+    };
+    
+   let mut options: LavalinkPlayerOptions = Default::default();
+
+   let _ = options.voice.insert(voice);
+   
+   node.rest
+       .update_player(id, false, options)
+       .await
+       .unwrap();
+}
 ```
 
 ### Notes
