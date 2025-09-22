@@ -24,7 +24,7 @@ anchorage = { git = "https://github.com/Deivu/Anchorage.git", version = "0.1.0" 
 
 ### Documentation
 
-> https://deivu.github.io/Anchorage/anchorage/index.html
+> <https://deivu.github.io/Anchorage/anchorage/index.html>
 
 ### Examples
 
