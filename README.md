@@ -12,19 +12,21 @@
 
 ### Installing
 
-* Command Line
+* From crates.io
 ```
-cargo add --git https://github.com/Deivu/Anchorage.git
+cargo add anchorage
 ```
 
-* Add it to `Cargo.toml`
+* From Git (Newer Updates, Non-stable version)
 ```
-anchorage = { git = "https://github.com/Deivu/Anchorage.git", version = "0.1.0" }
+cargo add --git https://github.com/Deivu/Anchorage.git
 ```
 
 ### Documentation
 
 > <https://deivu.github.io/Anchorage>
+
+> <https://docs.rs/anchorage/>
 
 ### Examples
 
@@ -72,7 +74,7 @@ let connection = ConnectionOptions {
     endpoint: "https://discord.com/some_voice_endpoint",
     guild_id,
     session_id: "some_session_id_from_discord",
-    token: "some_token_from_disord",
+    token: "some_token_from_discord",
     user_id: 424137718961012737,
 };
 
@@ -183,7 +185,7 @@ async handle(state: VoiceStatePartial, server: VoiceServerUpdateEvent) {
 ### Notes
 * As you noticed, I used `.unwrap()` on most of these calls, but you'd want to handle the errors properly
 * Anchorage is async, most of her calls won't block your current thread
-* Anchorage only handles the websocket handling, and provides an interface of REST for your ease of usage, she does not move nodes automatically on disconnect nor handle any voice related activity, like other library (Shoukaku) does, it's up to developers to implement this. (see above examples)
+* Anchorage only handles the websocket, and provides an interface of REST for your ease of usage, she does not move nodes automatically on disconnect nor handle any voice related activity, like other library (Shoukaku) does, it's up to developers to implement this. (see above examples)
 
 ### Other Links
 
