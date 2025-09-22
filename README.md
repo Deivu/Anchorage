@@ -41,7 +41,7 @@ let nodes = vec![NodeOptions {
     host: "127.0.0.1",
     port: 8080,
     auth: "password_you_want",
-}]
+}];
 
 let user_id: u64 = 424137718961012737;
 
@@ -97,7 +97,7 @@ let result = node.rest.resolve("https://www.youtube.com/watch?v=KheS1qj4fyk")
 let tracks = match result {
     DataType::Track(track) => vec![track],
     _ => vec![]
-}
+};
 
 if tracks.len() == 0 {
     return;
