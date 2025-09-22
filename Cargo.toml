@@ -5,20 +5,20 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tracing = "0.1.41"
-thiserror = "2.0.12"
-tokio-tungstenite = "0.20.1"
-serde_json = "1.0.140"
-scc = "2.3.3"
-flume = "0.11.1"
-tokio = "1.47.1"
-futures = "0.3.31"
+tracing = "^0.1.41"
+thiserror = "^2.0.12"
+tokio-tungstenite = "^0.20.1"
+serde_json = "^1.0.140"
+scc = "^2.3.3"
+flume = "^0.11.1"
+tokio = "^1.47.1"
+futures = "^0.3.31"
 
 [dependencies.serde]
-version = "1.0.219"
+version = "^1.0.219"
 features = ["derive"]
 
 [dependencies.reqwest]
-version = "0.11.27"
+version = "^0.11.27"
 default-features = false
 features = ["json"]

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use flume::Receiver;
 use reqwest::Client as ReqwestClient;
 use scc::HashMap as ConcurrentHashMap;
@@ -33,6 +35,7 @@ impl Debug for Anchorage {
 }
 
 impl Anchorage {
+    /// Creates a new instance of Anchorage
     pub fn new(mut options: Options) -> Self {
         Self {
             user_agent: options.user_agent.unwrap_or(String::from(format!("Anchorage/{}", env!("CARGO_PKG_VERSION")))),
