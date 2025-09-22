@@ -174,6 +174,7 @@ async handle(state: VoiceStatePartial, server: VoiceServerUpdateEvent) {
 
 * As you noticed, I used `.unwrap()` on most of these calls, but you'd want to handle the errors properly
 * Anchorage is async, most of her calls won't block your current thread
+* Anchorage only handles the websocket handling, and provides an interface of REST for your ease of usage, she does not move nodes automatically on disconnect nor handle any voice related activity, like other library (Shoukaku) does, it's up to developers to implement this. (see above examples)
 
 ### Other Links
 
