@@ -17,6 +17,7 @@ pub mod model;
 pub mod node;
 pub mod player;
 
+/// Main entry point of the library that manages the nodes
 pub struct Anchorage {
     pub user_agent: String,
     pub reconnect_tries: u16,
@@ -48,6 +49,7 @@ impl Anchorage {
         }
     }
 
+    /// Creates and connects all the nodes
     #[tracing::instrument(skip(self, nodes_data))]
     pub async fn start(
         &self,
@@ -92,6 +94,7 @@ impl Anchorage {
         Ok(())
     }
 
+    /// Shortcut to get an ideal node with the least amount of load
     pub async fn get_ideal_node(&self) -> Result<Node, LavalinkError> {
         let mut nodes = vec![];
 
@@ -116,12 +119,14 @@ impl Anchorage {
         }
     }
 
+    /// Gets the node where a player is connected to
     pub async fn get_node_for_player(&self, guild_id: u64) -> Option<OccupiedEntry<String, Node>> {
         self.nodes
             .any_entry_async(|_, node| node.events_sender.contains(&guild_id))
             .await
     }
 
+    /// Creates a new player, that you can interact and listen on events
     pub async fn create_player(
         &self,
         guild_id: u64,
@@ -147,6 +152,7 @@ impl Anchorage {
         Ok((player, events_receiver))
     }
 
+    /// Destroys an established player
     pub async fn destroy_player(&self, guild_id: u64) -> Result<(), LavalinkError> {
         let Some(node) = self.get_node_for_player(guild_id).await else {
             return Ok(());
@@ -163,6 +169,7 @@ impl Anchorage {
         Ok(())
     }
 
+    /// Connects a disconnected node that is in cache
     pub async fn connect(&self, name: String) -> Result<(), LavalinkError> {
         if let Some(mut data) = self.nodes.get_async(&*name).await {
             let node = data.get_mut();
@@ -172,6 +179,7 @@ impl Anchorage {
         Ok(())
     }
 
+    /// Disconnects a connected node, then removes it from cache
     pub async fn disconnect(&self, name: String, destroy: bool) -> Result<(), LavalinkError> {
         if let Some(mut data) = self.nodes.get_async(&*name).await {
             let node = data.get_mut();

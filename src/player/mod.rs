@@ -10,12 +10,16 @@ use crate::model::player::{
 };
 use crate::node::client::Node;
 
+/// A player instance
 pub struct Player {
+    /// GuildId for this player
     pub guild_id: u64,
+    /// Node where this player is
     node: Node,
 }
 
 impl Player {
+    /// Creates a new player
     pub async fn new(
         options: PlayerOptions,
     ) -> Result<(Self, FlumeSender<EventType>, FlumeReceiver<EventType>), LavalinkPlayerError> {
@@ -31,10 +35,12 @@ impl Player {
         Ok((player, events_sender, events_receiver))
     }
 
+    /// Gets the data of this player from lavalink
     pub async fn get_data(&self) -> Result<LavalinkPlayer, LavalinkPlayerError> {
         Ok(self.node.rest.get_player(self.guild_id).await?)
     }
 
+    /// Plays a track
     pub async fn play(&self, track: String) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
@@ -48,6 +54,7 @@ impl Player {
         Ok(())
     }
 
+    /// Stops the current playback
     pub async fn stop(&self) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
@@ -61,12 +68,14 @@ impl Player {
         Ok(())
     }
 
+    /// Destroys the player on lavalink
     pub async fn destroy(&self) -> Result<(), LavalinkPlayerError> {
         self.node.rest.destroy_player(self.guild_id).await?;
 
         Ok(())
     }
 
+    /// Pauses the player
     pub async fn pause(&self) -> Result<(), LavalinkPlayerError> {
         let data = self.get_data().await?;
 
@@ -79,6 +88,7 @@ impl Player {
         Ok(())
     }
 
+    /// Changes the player volume
     pub async fn update_volume(&self, volume: u32) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
 
@@ -89,6 +99,8 @@ impl Player {
         Ok(())
     }
 
+
+    /// Seeks the player
     pub async fn update_position(&mut self, position: u32) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
 
@@ -99,6 +111,7 @@ impl Player {
         Ok(())
     }
 
+    /// Updates the playback filter of the player
     pub async fn update_filters(
         &self,
         mut filters: LavalinkFilters,
@@ -116,6 +129,7 @@ impl Player {
         Ok(())
     }
 
+    /// Clears the filters applied in the player
     pub async fn clear_filters(&self) -> Result<(), LavalinkPlayerError> {
         let filters = Default::default();
 
@@ -128,6 +142,7 @@ impl Player {
         Ok(())
     }
 
+    /// Updates the connection info of the player
     pub async fn update_connection(
         &self,
         connection: ConnectionOptions,
@@ -149,6 +164,7 @@ impl Player {
         Ok(())
     }
 
+    /// Sends the updated player data to lavalink
     async fn send_update_player(
         &self,
         no_replace: bool,

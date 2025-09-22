@@ -141,6 +141,4 @@ player.play(tracks[0].encoded.clone()).await.unwrap();
 
 - [Lavalink](https://github.com/lavalink-devs/Lavalink)
 
-### Code made with ❤ by @ichimakase (Saya)
-
-> The Shipgirl Project
+> Code made with ❤ by @ichimakase (Saya) | The Shipgirl Project

@@ -33,14 +33,21 @@ pub enum NodeManagerCommands {
 }
 
 pub struct NodeManagerData {
+    /// Name of this node
     pub name: String,
+    /// Authorization key for this node
     pub auth: String,
+    /// UserId that this node will use
     pub id: u64,
+    /// Base url for this node
     pub url: String,
+    /// Penalties used for ideal node calculation
     pub penalties: f64,
+    /// Status of this node
     pub statistics: Option<Stats>,
 }
 
+/// Internal websocket handler
 pub struct NodeManager {
     pub name: String,
     pub auth: String,
@@ -73,6 +80,7 @@ impl From<&NodeManager> for NodeManagerData {
 }
 
 impl NodeManager {
+    /// Creates a new node manager
     pub fn new(
         options: NodeManagerOptions,
         commands_receiver: FlumeReceiver<WebsocketCommand>,
@@ -130,6 +138,8 @@ impl NodeManager {
         manager
     }
 
+    /// Starts this manager to listen for commands and messages
+    /// # This function will never resolve until the node errors, or stops to listen
     pub async fn start(&mut self) -> Result<(), LavalinkNodeError> {
         let result = self.handle().await;
 
@@ -139,6 +149,7 @@ impl NodeManager {
         result
     }
 
+    /// Handles the event received
     async fn handle(&mut self) -> Result<(), LavalinkNodeError> {
         while !self.destroyed {
             let data = self.receiver.recv_async().await?;
@@ -152,6 +163,7 @@ impl NodeManager {
         Ok(())
     }
 
+    /// Send destroy event on all players in this node, then clears the events cache
     async fn send_players_destroy(&mut self) {
         self.event_senders
             .scan_async(|_, sender| {
@@ -162,6 +174,7 @@ impl NodeManager {
         self.event_senders.clear_async().await;
     }
 
+    /// Handles commands received from interface struct
     async fn handle_command(&mut self, command: WebsocketCommand) -> Result<(), LavalinkNodeError> {
         match command {
             WebsocketCommand::Connect(sender) => {
@@ -184,6 +197,7 @@ impl NodeManager {
         Ok(())
     }
 
+    /// Handles messages from lavalink
     #[tracing::instrument(skip(self))]
     async fn handle_message(
         &mut self,
@@ -257,6 +271,7 @@ impl NodeManager {
         }
     }
 
+    /// Connects this node
     #[tracing::instrument(skip(self))]
     pub async fn connect(&mut self) -> Result<(), LavalinkNodeError> {
         if self.connection.available() {
@@ -335,6 +350,7 @@ impl NodeManager {
         Ok(())
     }
 
+    /// Disconnects this node
     #[tracing::instrument(skip(self))]
     pub async fn disconnect(&mut self) {
         self.connection.disconnect().await;
@@ -346,6 +362,7 @@ impl NodeManager {
         tracing::info!("Lavalink Node {} Disconnected...", self.name);
     }
 
+    /// Destroys this node
     #[tracing::instrument(skip(self))]
     pub async fn destroy(&mut self) {
         self.disconnect().await;
@@ -354,14 +371,18 @@ impl NodeManager {
     }
 }
 
+/// Interface to communicate with the websocket
 #[derive(Clone, Debug)]
 pub struct Node {
+    /// Rest interface for this node
     pub rest: Rest,
+    /// List of events sender channel where this node will send player events on
     pub events_sender: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
     commands_sender: FlumeSender<WebsocketCommand>,
 }
 
 impl Node {
+    /// Creates a new Node interface and underlying worker
     pub async fn new(
         options: NodeManagerOptions,
     ) -> Result<(Self, JoinHandle<String>), LavalinkNodeError> {
@@ -405,6 +426,7 @@ impl Node {
         Ok((node, handle))
     }
 
+    /// Gets the current node data
     pub async fn data(&self) -> Result<NodeManagerData, LavalinkNodeError> {
         let (sender, receiver) = channel::<Result<NodeManagerData, LavalinkNodeError>>();
 
@@ -415,6 +437,7 @@ impl Node {
         receiver.await?
     }
 
+    /// Connects this node
     pub async fn connect(&self) -> Result<(), LavalinkNodeError> {
         let (sender, receiver) = channel::<Result<(), LavalinkNodeError>>();
 
@@ -425,6 +448,7 @@ impl Node {
         receiver.await?
     }
 
+    /// Disconnects this node
     pub async fn disconnect(&self) -> Result<(), LavalinkNodeError> {
         let (sender, receiver) = channel::<()>();
 
@@ -435,6 +459,7 @@ impl Node {
         Ok(receiver.await?)
     }
 
+    /// Destroys this node
     pub async fn destroy(&self) -> Result<(), LavalinkNodeError> {
         let (sender, receiver) = channel::<()>();
 

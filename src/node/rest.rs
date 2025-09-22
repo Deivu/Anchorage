@@ -12,14 +12,19 @@ use crate::model::anchorage::RestOptions;
 
 #[derive(Clone, Debug)]
 pub struct Rest {
+    /// Request client this rest will use
     pub request: Client,
+    /// Base url to use
     pub url: String,
+    /// Authorization key to use
     pub auth: String,
+    /// User-Agent to use on requests
     pub user_agent: String,
     session_id: Arc<RwLock<Option<String>>>,
 }
 
 impl Rest {
+    /// Creates a new Rest that is tied to a node
     pub fn new(options: RestOptions) -> Self {
         Self {
             request: options.request,
@@ -30,11 +35,13 @@ impl Rest {
         }
     }
 
+    /// Gets the session id of the player this rest can communicate on
     pub async fn get_session_id(&self) -> Result<String, LavalinkRestError> {
         let option = self.session_id.read().await.clone();
         option.ok_or(LavalinkRestError::NoSessionId)
     }
 
+    /// Tries to resolve a link, or a search term with prefix
     pub async fn resolve(&self, identifier: String) -> Result<DataType, LavalinkRestError> {
         let request = self
             .request
@@ -46,6 +53,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Decodes a base64 lavalink track
     pub async fn decode(&self, track: String) -> Result<Track, LavalinkRestError> {
         let request = self
             .request
@@ -57,6 +65,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Gets the player info for a guild
     pub async fn get_player(&self, guild_id: u64) -> Result<LavalinkPlayer, LavalinkRestError> {
         let request = self.request.get(format!(
             "{}/sessions/{}/players/{}",
@@ -70,6 +79,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Gets all the players in this node where this rest is attached to
     pub async fn get_players(&self) -> Result<Vec<LavalinkPlayer>, LavalinkRestError> {
         let request = self.request.get(format!(
             "{}/sessions/{}/players",
@@ -82,6 +92,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Updates a player
     pub async fn update_player(
         &self,
         guild_id: u64,
@@ -105,6 +116,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Destroys a player
     pub async fn destroy_player(&self, guild_id: u64) -> Result<(), LavalinkRestError> {
         let request = self.request.delete(format!(
             "{}/sessions/{}/players/{}",
@@ -118,6 +130,7 @@ impl Rest {
         Ok(())
     }
 
+    /// Updates the current session (for resuming capabilities)
     pub async fn update_session(
         &self,
         options: SessionInfo,
@@ -136,6 +149,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Gets the current statistics of the lavalink server
     pub async fn stats(&self) -> Result<Stats, LavalinkRestError> {
         let request = self.request.get(format!("{}/stats", self.url));
 
@@ -144,6 +158,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Gets the route planner status of this lavalink server
     pub async fn route_planner_status(&self) -> Result<RoutePlanner, LavalinkRestError> {
         let request = self
             .request
@@ -154,6 +169,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Unmarks a failed ip address on your ip rotator
     pub async fn unmark_failed_address(&self, address: String) -> Result<(), LavalinkRestError> {
         let request = self
             .request
@@ -166,6 +182,7 @@ impl Rest {
         Ok(())
     }
 
+    /// Grabs the info of the lavalink server
     pub async fn info(&self) -> Result<LavalinkInfo, LavalinkRestError> {
         let request = self.request.get(format!("{}/info", self.url));
 
@@ -174,6 +191,7 @@ impl Rest {
             .ok_or(LavalinkRestError::NothingReturned)
     }
 
+    /// Creates a request
     async fn make_request<T: for<'de> Deserialize<'de>>(
         &self,
         builder: RequestBuilder,
