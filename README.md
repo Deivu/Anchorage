@@ -70,7 +70,7 @@ let connection = ConnectionOptions {
     user_id: 424137718961012737,
 };
 
-/// shortcut to get an idean node to connect to
+/// shortcut to get an ideal node to connect to
 let node = anchorage.get_ideal_node()
     .await
     .unwrap();
