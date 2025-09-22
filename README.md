@@ -132,7 +132,7 @@ player.play(tracks[0].encoded.clone()).await.unwrap();
 
 * Handling voice server changes (Channel moves & Channel voice server changes)
 ```rs
-/// Partial Disord gateway packet for voice state update
+/// partial Discord gateway packet for voice state update
 pub struct VoiceStatePartial {
 	channel_id?: Option<String>,
 	session_id: String,
@@ -140,7 +140,7 @@ pub struct VoiceStatePartial {
 	self_mute: bool,
 }
 
-/// Disord gateway packet for voice server update
+/// discord gateway packet for voice server update
 pub struct VoiceServerUpdateEvent {
     pub token: String,
     pub guild_id: Option<u64>,
