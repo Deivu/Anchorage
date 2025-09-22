@@ -15,7 +15,7 @@ pub struct Rest {
     pub request: Client,
     pub url: String,
     pub auth: String,
-    pub agent: String,
+    pub user_agent: String,
     session_id: Arc<RwLock<Option<String>>>,
 }
 
@@ -25,7 +25,7 @@ impl Rest {
             request: options.request,
             url: options.url,
             auth: options.auth,
-            agent: options.agent,
+            user_agent: options.user_agent,
             session_id: options.session_id,
         }
     }
@@ -180,7 +180,7 @@ impl Rest {
     ) -> Result<Option<T>, LavalinkRestError> {
         let request = builder
             .header("Authorization", self.auth.as_str())
-            .header("User-Agent", self.agent.as_str())
+            .header("User-Agent", self.user_agent.as_str())
             .build()?;
 
         let response = self.request.execute(request).await?;

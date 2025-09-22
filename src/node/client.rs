@@ -50,11 +50,12 @@ pub struct NodeManager {
     pub statistics: Option<Stats>,
     pub session_id: Arc<RwLock<Option<String>>>,
     pub event_senders: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
-    agent: String,
+    user_agent: String,
+    reconnect_tries: u16,
     receiver: FlumeReceiver<NodeManagerCommands>,
     connection: Connection,
     destroyed: bool,
-    reconnects: usize,
+    reconnects: u16,
     handles: Vec<JoinHandle<()>>,
 }
 
@@ -89,7 +90,8 @@ impl NodeManager {
             statistics: None,
             session_id: Arc::new(RwLock::new(None)),
             event_senders: Arc::new(ConcurrentHashMap::new()),
-            agent: options.agent,
+            user_agent: options.user_agent,
+            reconnect_tries: options.reconnect_tries,
             receiver: node_receiver,
             connection: websocket_connection,
             destroyed: false,
@@ -286,8 +288,8 @@ impl NodeManager {
             };
 
             pairs.insert("Session-Id", &session_id);
-            pairs.insert("Client-Name", &self.agent);
-            pairs.insert("User-Agent", &self.agent);
+            pairs.insert("Client-Name", &self.user_agent);
+            pairs.insert("User-Agent", &self.user_agent);
 
             let headers = request.headers_mut();
 
@@ -308,9 +310,7 @@ impl NodeManager {
                 break;
             };
 
-            // todo!() reconnect tries will not be static and will be available to configure later
-            if self.reconnects < 3 {
-                // todo!() will not be static and will be available to configure later
+            if self.reconnects < self.reconnect_tries {
                 let duration = Duration::from_secs(5);
 
                 tracing::debug!(
@@ -375,7 +375,7 @@ impl Node {
             request: options.request,
             url: format!("http://{}:{}/v4", options.host, options.port),
             auth: options.auth.clone(),
-            agent: options.agent.clone(),
+            user_agent: options.user_agent.clone(),
             session_id: manager.session_id.clone(),
         });
 

@@ -5,7 +5,6 @@ use scc::hash_map::OccupiedEntry;
 use std::fmt::{Debug, Formatter};
 use std::result::Result;
 use std::sync::Arc;
-
 use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, PlayerOptions, ConnectionOptions};
 use crate::model::error::LavalinkError;
 use crate::model::player::EventType;
@@ -17,7 +16,8 @@ pub mod node;
 pub mod player;
 
 pub struct Anchorage {
-    pub agent: String,
+    pub user_agent: String,
+    pub reconnect_tries: u16,
     pub nodes: Arc<ConcurrentHashMap<String, Node>>,
     pub(crate) request: ReqwestClient,
 }
@@ -25,7 +25,8 @@ pub struct Anchorage {
 impl Debug for Anchorage {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LavalinkClient")
-            .field("agent", &self.agent)
+            .field("user_agent", &self.user_agent)
+            .field("reconnect_tries", &self.reconnect_tries)
             .field("nodes", &self.nodes.len())
             .finish()
     }
@@ -34,12 +35,13 @@ impl Debug for Anchorage {
 impl Anchorage {
     pub fn new(mut options: Options) -> Self {
         Self {
-            agent: String::from(format!("Anchorage/{}", env!("CARGO_PKG_VERSION"))),
-            nodes: Arc::new(ConcurrentHashMap::new()),
+            user_agent: options.user_agent.unwrap_or(String::from(format!("Anchorage/{}", env!("CARGO_PKG_VERSION")))),
+            reconnect_tries: options.reconnect_tries.unwrap_or(u16::MAX),
             request: options
                 .request
                 .get_or_insert_with(ReqwestClient::new)
                 .to_owned(),
+            nodes: Arc::new(ConcurrentHashMap::new())
         }
     }
 
@@ -65,8 +67,9 @@ impl Anchorage {
                 port: info.port,
                 auth: info.auth,
                 id: user_id,
-                agent: self.agent.clone(),
                 request: self.request.clone(),
+                user_agent: self.user_agent.clone(),
+                reconnect_tries: self.reconnect_tries,
             })
             .await?;
 

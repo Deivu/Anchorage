@@ -13,14 +13,15 @@ pub struct NodeManagerOptions {
     pub auth: String,
     pub id: u64,
     pub request: ReqwestClient,
-    pub agent: String,
+    pub user_agent: String,
+    pub reconnect_tries: u16,
 }
 
 pub struct RestOptions {
     pub request: Client,
     pub url: String,
     pub auth: String,
-    pub agent: String,
+    pub user_agent: String,
     pub session_id: Arc<RwLock<Option<String>>>,
 }
 
@@ -47,6 +48,7 @@ pub struct NodeOptions {
 }
 
 pub struct Options {
-    pub agent: String,
+    pub user_agent: Option<String>,
+    pub reconnect_tries: Option<u16>,
     pub request: Option<Client>,
 }
