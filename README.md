@@ -1,6 +1,8 @@
 # Anchorage
 
-> A stable wrapper around Lavalink in Rust (Why is this named Anchorage? She's cute that's it)
+> A stable wrapper (Tokio-Based) around Lavalink in Rust
+
+> Why is this named Anchorage? She's cute that's it
 
 <p align="center">
     <img src="https://yuki.suou.moe/Anchorage_CN_Without_BG-zvy6Q7GP.png"> 
@@ -175,7 +177,6 @@ async handle(state: VoiceStatePartial, server: VoiceServerUpdateEvent) {
 ```
 
 ### Notes
-
 * As you noticed, I used `.unwrap()` on most of these calls, but you'd want to handle the errors properly
 * Anchorage is async, most of her calls won't block your current thread
 * Anchorage only handles the websocket handling, and provides an interface of REST for your ease of usage, she does not move nodes automatically on disconnect nor handle any voice related activity, like other library (Shoukaku) does, it's up to developers to implement this. (see above examples)
