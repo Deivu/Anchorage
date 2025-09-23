@@ -203,7 +203,7 @@ pub async fn create_anchorage() ->  Result<Anchorage, AnchorageError> {
     let user_id: u64 = 424137718961012737;
 
     // The ? signifies to stop the execution and return the error
-    anchorage.start(user_id, nodes).await?
+    anchorage.start(user_id, nodes).await?;
         
     anchorage
 }
