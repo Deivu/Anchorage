@@ -11,6 +11,7 @@ use tokio_tungstenite::tungstenite::{Message, handshake::client::Request};
 use crate::model::error::LavalinkNodeError;
 use crate::model::node::LavalinkMessage;
 
+/// Internal websocket handler around WebsocketStream from tokio_tungstenite
 pub struct ConnectionManager {
     pub stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
 }
@@ -47,6 +48,8 @@ impl ConnectionManager {
     }
 }
 
+
+/// Public facing wrapper around connection manager
 pub struct Connection {
     handle: Option<JoinHandle<()>>,
     sender: FlumeSender<Result<Option<LavalinkMessage>, TungsteniteError>>,

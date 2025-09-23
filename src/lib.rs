@@ -8,7 +8,7 @@ use std::fmt::{Debug, Formatter};
 use std::result::Result;
 use std::sync::Arc;
 use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, PlayerOptions, ConnectionOptions};
-use crate::model::error::LavalinkError;
+use crate::model::error::AnchorageError;
 use crate::model::player::EventType;
 use crate::node::client::Node;
 use crate::player::Player;
@@ -19,8 +19,11 @@ pub mod player;
 
 /// Main entry point of the library that manages the nodes
 pub struct Anchorage {
+    /// User-Agent Anchorage will use for each request
     pub user_agent: String,
+    /// Reconnect tries for a node before disconnecting it
     pub reconnect_tries: u16,
+    /// List of nodes connected currently
     pub nodes: Arc<ConcurrentHashMap<String, Node>>,
     pub(crate) request: ReqwestClient,
 }
@@ -55,7 +58,7 @@ impl Anchorage {
         &self,
         user_id: u64,
         nodes_data: Vec<impl Into<NodeOptions>>,
-    ) -> Result<(), LavalinkError> {
+    ) -> Result<(), AnchorageError> {
         tracing::info!(
             "Starting Lavalink with user_id ({}) and {} node(s)",
             user_id,
@@ -95,7 +98,7 @@ impl Anchorage {
     }
 
     /// Shortcut to get an ideal node with the least amount of load
-    pub async fn get_ideal_node(&self) -> Result<Node, LavalinkError> {
+    pub async fn get_ideal_node(&self) -> Result<Node, AnchorageError> {
         let mut nodes = vec![];
 
         self.nodes
@@ -117,7 +120,7 @@ impl Anchorage {
 
         match selected_node {
             Some(node) => Ok(node),
-            None => Err(LavalinkError::NoNodesAvailable),
+            None => Err(AnchorageError::NoNodesAvailable),
         }
     }
 
@@ -134,9 +137,9 @@ impl Anchorage {
         guild_id: u64,
         node: Node,
         connection: impl Into<ConnectionOptions>,
-    ) -> Result<(Player, Receiver<EventType>), LavalinkError> {
+    ) -> Result<(Player, Receiver<EventType>), AnchorageError> {
         if self.get_node_for_player(guild_id).await.is_some() {
-            return Err(LavalinkError::CreateExistingPlayer);
+            return Err(AnchorageError::CreateExistingPlayer);
         }
 
         let (player, events_sender, events_receiver) = Player::new(PlayerOptions {
@@ -155,7 +158,7 @@ impl Anchorage {
     }
 
     /// Destroys an established player
-    pub async fn destroy_player(&self, guild_id: u64) -> Result<(), LavalinkError> {
+    pub async fn destroy_player(&self, guild_id: u64) -> Result<(), AnchorageError> {
         let Some(node) = self.get_node_for_player(guild_id).await else {
             return Ok(());
         };
@@ -172,7 +175,7 @@ impl Anchorage {
     }
 
     /// Connects a disconnected node that is in cache
-    pub async fn connect(&self, name: &str) -> Result<(), LavalinkError> {
+    pub async fn connect(&self, name: &str) -> Result<(), AnchorageError> {
         if let Some(mut data) = self.nodes.get_async(name).await {
             let node = data.get_mut();
             node.connect().await?;
@@ -182,7 +185,7 @@ impl Anchorage {
     }
 
     /// Disconnects a connected node, then removes it from cache
-    pub async fn disconnect(&self, name: &str, destroy: bool) -> Result<(), LavalinkError> {
+    pub async fn disconnect(&self, name: &str, destroy: bool) -> Result<(), AnchorageError> {
         if let Some(mut data) = self.nodes.get_async(name).await {
             let node = data.get_mut();
 

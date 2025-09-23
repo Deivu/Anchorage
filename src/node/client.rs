@@ -1,4 +1,4 @@
-use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded, Receiver};
+use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded};
 use scc::HashMap as ConcurrentHashMap;
 use std::collections::HashMap;
 use std::result::Result;
@@ -44,13 +44,21 @@ pub struct NodeManagerData {
 
 /// Internal websocket handler
 pub struct NodeManager {
+    /// Name of this node
     pub name: String,
+    /// Authentication key this node uses
     pub auth: String,
+    /// User-Id of the bot connected to this node
     pub id: u64,
+    /// Websocket URL that is being used to connect
     pub url: String,
+    /// Load of this node
     pub penalties: f64,
+    /// Statistics of this node
     pub statistics: Option<Stats>,
+    /// Current session id for this node
     pub session_id: Arc<RwLock<Option<String>>>,
+    /// List of subscribers for this node player events, mapped by Guild Id and It's sender
     pub event_senders: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
     receivers: NodeReceivers,
     user_agent: String,
@@ -60,9 +68,10 @@ pub struct NodeManager {
     reconnects: u16,
 }
 
+/// Wrapper around the websocket and command receivers for ease of usage
 pub struct NodeReceivers {
-    websocket: Receiver<Result<Option<LavalinkMessage>, TungsteniteError>>,
-    command: Receiver<WebsocketCommand>
+    websocket: FlumeReceiver<Result<Option<LavalinkMessage>, TungsteniteError>>,
+    command: FlumeReceiver<WebsocketCommand>
 }
 
 impl From<&NodeManager> for NodeManagerData {
@@ -351,7 +360,7 @@ impl NodeManager {
 pub struct Node {
     /// Rest interface for this node
     pub rest: Rest,
-    /// List of events sender channel where this node will send player events on
+    /// List of subscribers for this node player events, mapped by Guild Id and It's sender
     pub events_sender: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
     commands_sender: FlumeSender<WebsocketCommand>,
 }

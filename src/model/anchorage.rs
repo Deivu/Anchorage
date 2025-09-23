@@ -5,6 +5,7 @@ use reqwest::Client as ReqwestClient;
 
 use crate::node::client::Node;
 
+/// Options to initialize an internal NodeManager
 #[derive(Clone)]
 pub struct NodeManagerOptions {
     pub name: String,
@@ -17,6 +18,7 @@ pub struct NodeManagerOptions {
     pub reconnect_tries: u16,
 }
 
+/// Options to initialize a Rest client
 pub struct RestOptions {
     pub request: Client,
     pub url: String,
@@ -25,12 +27,14 @@ pub struct RestOptions {
     pub session_id: Arc<RwLock<Option<String>>>,
 }
 
+/// Options to create a player
 pub struct PlayerOptions {
     pub node: Node,
     pub connection: ConnectionOptions,
     pub guild_id: u64,
 }
 
+/// Options to be used to connect to a voice channel
 pub struct ConnectionOptions {
     pub channel_id: Option<u64>,
     pub endpoint: String,
@@ -40,6 +44,7 @@ pub struct ConnectionOptions {
     pub user_id: u64,
 }
 
+/// User node options used to create a node
 pub struct NodeOptions {
     pub name: String,
     pub host: String,
@@ -47,6 +52,7 @@ pub struct NodeOptions {
     pub auth: String,
 }
 
+/// Options to initialize an Anchorage client
 pub struct Options {
     pub user_agent: Option<String>,
     pub reconnect_tries: Option<u16>,

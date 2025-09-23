@@ -183,7 +183,31 @@ async handle(state: VoiceStatePartial, server: VoiceServerUpdateEvent) {
 ```
 
 ### Notes
-* As you noticed, I used `.unwrap()` on most of these calls, but you'd want to handle the errors properly
+* As you noticed, I used `.unwrap()` on most of these calls, this isn't recommended because you'd want to handle the errors properly (example below)
+```rs
+/// Proper error handling example
+pub async fn create_anchorage() ->  Result<Anchorage, AnchorageError> {
+    let anchorage = Anchorage::new(Options {
+        user_agent: None,
+        reconnect_tries: None,
+        request: None,
+    });
+    
+    let nodes = vec![NodeOptions { 
+         name: "Anchorage",
+         host: "127.0.0.1",
+         port: 8080,
+         auth: "password_you_want",
+    }];
+
+    let user_id: u64 = 424137718961012737;
+
+    // The ? signifies to stop the execution and return the error
+    anchorage.start(user_id, nodes).await?
+        
+    anchorage
+}
+```
 * Anchorage is async, most of her calls won't block your current thread
 * Anchorage only handles the websocket, and provides an interface of REST for your ease of usage, she does not move nodes automatically on disconnect nor handle any voice related activity, like other library (Shoukaku) does, it's up to developers to implement this. (see above examples)
 

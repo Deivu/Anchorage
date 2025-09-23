@@ -1,5 +1,6 @@
 use thiserror::Error as ThisError;
 
+/// List of errors that can throw from an instance of Lavalink Node
 #[derive(ThisError, Debug)]
 pub enum LavalinkNodeError {
     #[error(transparent)]
@@ -18,6 +19,7 @@ pub enum LavalinkNodeError {
     TokioOneshotChannelRecv(#[from] tokio::sync::oneshot::error::RecvError),
 }
 
+/// List of errors that can throw from an instance of Lavalink Rest
 #[derive(ThisError, Debug)]
 pub enum LavalinkRestError {
     #[error(transparent)]
@@ -34,6 +36,7 @@ pub enum LavalinkRestError {
     NothingReturned,
 }
 
+/// List of errors that can throw from an instance of Lavalink Player
 #[derive(ThisError, Debug)]
 pub enum LavalinkPlayerError {
     #[error(transparent)]
@@ -46,8 +49,9 @@ pub enum LavalinkPlayerError {
     FlumeSend(String),
 }
 
+/// List of errors that can throw from an instance of Anchorage
 #[derive(ThisError, Debug)]
-pub enum LavalinkError {
+pub enum AnchorageError {
     #[error(transparent)]
     LavalinkNode(#[from] LavalinkNodeError),
     #[error(transparent)]
