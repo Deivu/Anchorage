@@ -29,8 +29,8 @@ impl Rest {
         Self {
             request: options.request,
             url: options.url,
-            auth: options.auth,
-            user_agent: options.user_agent,
+            auth: options.auth.to_string(),
+            user_agent: options.user_agent.to_string(),
             session_id: options.session_id,
         }
     }

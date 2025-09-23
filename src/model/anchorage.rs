@@ -6,24 +6,23 @@ use reqwest::Client as ReqwestClient;
 use crate::node::client::Node;
 
 /// Options to initialize an internal NodeManager
-#[derive(Clone)]
-pub struct NodeManagerOptions {
-    pub name: String,
-    pub host: String,
+pub struct NodeManagerOptions<'a>  {
+    pub name: &'a str,
+    pub host: &'a str,
     pub port: u32,
-    pub auth: String,
+    pub auth: &'a str,
     pub id: u64,
     pub request: ReqwestClient,
-    pub user_agent: String,
+    pub user_agent: &'a str,
     pub reconnect_tries: u16,
 }
 
 /// Options to initialize a Rest client
-pub struct RestOptions {
+pub struct RestOptions<'a> {
     pub request: Client,
     pub url: String,
-    pub auth: String,
-    pub user_agent: String,
+    pub auth: &'a str,
+    pub user_agent: &'a str,
     pub session_id: Arc<RwLock<Option<String>>>,
 }
 

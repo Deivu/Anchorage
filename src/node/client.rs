@@ -90,14 +90,14 @@ impl From<&NodeManager> for NodeManagerData {
 impl NodeManager {
     /// Creates a new node manager
     pub fn new(
-        options: NodeManagerOptions,
+        options: &NodeManagerOptions,
         commands_receiver: FlumeReceiver<WebsocketCommand>,
     ) -> Self {
         let (websocket_connection, message_receiver) = Connection::new();
 
         Self {
-            name: options.name,
-            auth: options.auth,
+            name: options.name.to_string(),
+            auth: options.auth.to_string(),
             id: options.id,
             url: format!("ws://{}:{}/v4/websocket", options.host, options.port),
             penalties: 0.0,
@@ -108,7 +108,7 @@ impl NodeManager {
                 websocket: message_receiver,
                 command: commands_receiver,
             },
-            user_agent: options.user_agent,
+            user_agent: options.user_agent.to_string(),
             reconnect_tries: options.reconnect_tries,
             connection: websocket_connection,
             destroyed: false,
@@ -368,19 +368,19 @@ pub struct Node {
 impl Node {
     /// Creates a new Node interface and underlying worker
     pub async fn new(
-        options: NodeManagerOptions,
+        options: NodeManagerOptions<'_>,
     ) -> Result<(Self, JoinHandle<String>), LavalinkNodeError> {
         let (commands_sender, commands_receiver) = unbounded::<WebsocketCommand>();
 
-        let mut manager = NodeManager::new(options.clone(), commands_receiver);
+        let mut manager = NodeManager::new(&options, commands_receiver);
 
         manager.connect().await?;
 
         let rest = Rest::new(RestOptions {
             request: options.request,
             url: format!("http://{}:{}/v4", options.host, options.port),
-            auth: options.auth.clone(),
-            user_agent: options.user_agent.clone(),
+            auth: options.auth,
+            user_agent: options.user_agent,
             session_id: manager.session_id.clone(),
         });
 

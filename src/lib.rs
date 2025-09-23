@@ -67,19 +67,20 @@ impl Anchorage {
 
         for data in nodes_data {
             let info = data.into();
-            let name = info.name.clone();
-
+            
             let (node, handle) = Node::new(NodeManagerOptions {
-                name: info.name,
-                host: info.host,
+                name: &info.name,
+                host: &info.host,
                 port: info.port,
-                auth: info.auth,
+                auth: &info.auth,
                 id: user_id,
                 request: self.request.clone(),
-                user_agent: self.user_agent.clone(),
+                user_agent: &self.user_agent,
                 reconnect_tries: self.reconnect_tries,
             })
             .await?;
+
+            self.nodes.insert_async(info.name, node).await.ok();
 
             let nodes = self.nodes.clone();
 
@@ -91,7 +92,7 @@ impl Anchorage {
                 let _ = nodes.remove_async(&name).await;
             });
 
-            self.nodes.insert_async(name, node).await.ok();
+           
         }
 
         Ok(())
