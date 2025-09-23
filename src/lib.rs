@@ -111,7 +111,12 @@ impl Anchorage {
         for node in nodes {
             let data = node.data().await?;
             
-            if penalties >= data.penalties {
+            if selected_node.is_none() {
+                selected_node = Some(node);
+                continue;
+            }
+            
+            if penalties > data.penalties {
                 selected_node = Some(node);
             }
             
