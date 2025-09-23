@@ -1,4 +1,4 @@
-use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded};
+use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded, Receiver};
 use scc::HashMap as ConcurrentHashMap;
 use std::collections::HashMap;
 use std::result::Result;
@@ -27,11 +27,6 @@ pub enum WebsocketCommand {
     GetData(TokioOneshotSender<Result<NodeManagerData, LavalinkNodeError>>),
 }
 
-pub enum NodeManagerCommands {
-    Command(WebsocketCommand),
-    Message(Result<Option<LavalinkMessage>, TungsteniteError>),
-}
-
 pub struct NodeManagerData {
     /// Name of this node
     pub name: String,
@@ -57,13 +52,17 @@ pub struct NodeManager {
     pub statistics: Option<Stats>,
     pub session_id: Arc<RwLock<Option<String>>>,
     pub event_senders: Arc<ConcurrentHashMap<u64, FlumeSender<EventType>>>,
+    receivers: NodeReceivers,
     user_agent: String,
     reconnect_tries: u16,
-    receiver: FlumeReceiver<NodeManagerCommands>,
     connection: Connection,
     destroyed: bool,
     reconnects: u16,
-    handles: Vec<JoinHandle<()>>,
+}
+
+pub struct NodeReceivers {
+    websocket: Receiver<Result<Option<LavalinkMessage>, TungsteniteError>>,
+    command: Receiver<WebsocketCommand>
 }
 
 impl From<&NodeManager> for NodeManagerData {
@@ -87,9 +86,7 @@ impl NodeManager {
     ) -> Self {
         let (websocket_connection, message_receiver) = Connection::new();
 
-        let (node_sender, node_receiver) = unbounded::<NodeManagerCommands>();
-
-        let mut manager = Self {
+        Self {
             name: options.name,
             auth: options.auth,
             id: options.id,
@@ -98,44 +95,16 @@ impl NodeManager {
             statistics: None,
             session_id: Arc::new(RwLock::new(None)),
             event_senders: Arc::new(ConcurrentHashMap::new()),
+            receivers: NodeReceivers {
+                websocket: message_receiver,
+                command: commands_receiver,
+            },
             user_agent: options.user_agent,
             reconnect_tries: options.reconnect_tries,
-            receiver: node_receiver,
             connection: websocket_connection,
             destroyed: false,
             reconnects: 0,
-            handles: Vec::new(),
-        };
-
-        let name = manager.name.clone();
-        let sender = node_sender.clone();
-
-        manager.handles.push(tokio::spawn(async move {
-            while let Ok(command) = commands_receiver.recv_async().await {
-                sender
-                    .send_async(NodeManagerCommands::Command(command))
-                    .await
-                    .ok();
-            }
-
-            tracing::debug!("Lavalink Node {} stopped on listening for commands", name);
-        }));
-
-        let name = manager.name.clone();
-        let sender = node_sender.clone();
-
-        manager.handles.push(tokio::spawn(async move {
-            while let Ok(command) = message_receiver.recv_async().await {
-                sender
-                    .send_async(NodeManagerCommands::Message(command))
-                    .await
-                    .ok();
-            }
-
-            tracing::debug!("Lavalink Node {} stopped on listening for messages", name);
-        }));
-
-        manager
+        }
     }
 
     /// Starts this manager to listen for commands and messages
@@ -152,11 +121,17 @@ impl NodeManager {
     /// Handles the event received
     async fn handle(&mut self) -> Result<(), LavalinkNodeError> {
         while !self.destroyed {
-            let data = self.receiver.recv_async().await?;
-
-            match data {
-                NodeManagerCommands::Command(command) => self.handle_command(command).await?,
-                NodeManagerCommands::Message(message) => self.handle_message(message).await?,
+            tokio::select! {
+                Ok(message) = self.receivers.websocket.recv_async() => {
+                    self.handle_message(message).await?;
+                }
+                Ok(command) = self.receivers.command.recv_async() => {
+                    self.handle_command(command).await?;
+                }
+                else => {
+                    tracing::debug!("Lavalink Node {} stopped on listening for websocket messages & commands", self.name);
+                    break;
+                }
             }
         }
 
