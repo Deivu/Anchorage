@@ -42,11 +42,11 @@ impl Rest {
     }
 
     /// Tries to resolve a link, or a search term with prefix
-    pub async fn resolve(&self, identifier: String) -> Result<DataType, LavalinkRestError> {
+    pub async fn resolve(&self, identifier: &str) -> Result<DataType, LavalinkRestError> {
         let request = self
             .request
             .get(format!("{}/loadtracks", self.url))
-            .query(&[("identifier", &identifier)]);
+            .query(&[("identifier", identifier)]);
 
         self.make_request::<DataType>(request)
             .await?
@@ -54,11 +54,11 @@ impl Rest {
     }
 
     /// Decodes a base64 lavalink track
-    pub async fn decode(&self, track: String) -> Result<Track, LavalinkRestError> {
+    pub async fn decode(&self, track: &str) -> Result<Track, LavalinkRestError> {
         let request = self
             .request
             .get(format!("{}/decodetrack", self.url))
-            .query(&[("track", &track)]);
+            .query(&[("track", track)]);
 
         self.make_request::<Track>(request)
             .await?
@@ -170,7 +170,7 @@ impl Rest {
     }
 
     /// Unmarks a failed ip address on your ip rotator
-    pub async fn unmark_failed_address(&self, address: String) -> Result<(), LavalinkRestError> {
+    pub async fn unmark_failed_address(&self, address: &str) -> Result<(), LavalinkRestError> {
         let request = self
             .request
             .post(format!("{}/routeplanner/free/address", self.url))

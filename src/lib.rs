@@ -102,15 +102,17 @@ impl Anchorage {
             .scan_async(|_, node| nodes.push(node.clone()))
             .await;
 
-        let mut penalties: f64;
+        let mut penalties: f64 = 0.0;
         let mut selected_node: Option<Node> = None;
 
         for node in nodes {
             let data = node.data().await?;
-            penalties = data.penalties;
+            
             if penalties >= data.penalties {
                 selected_node = Some(node);
             }
+            
+            penalties = data.penalties;
         }
 
         match selected_node {
@@ -170,8 +172,8 @@ impl Anchorage {
     }
 
     /// Connects a disconnected node that is in cache
-    pub async fn connect(&self, name: String) -> Result<(), LavalinkError> {
-        if let Some(mut data) = self.nodes.get_async(&*name).await {
+    pub async fn connect(&self, name: &str) -> Result<(), LavalinkError> {
+        if let Some(mut data) = self.nodes.get_async(name).await {
             let node = data.get_mut();
             node.connect().await?;
         }
@@ -180,15 +182,15 @@ impl Anchorage {
     }
 
     /// Disconnects a connected node, then removes it from cache
-    pub async fn disconnect(&self, name: String, destroy: bool) -> Result<(), LavalinkError> {
-        if let Some(mut data) = self.nodes.get_async(&*name).await {
+    pub async fn disconnect(&self, name: &str, destroy: bool) -> Result<(), LavalinkError> {
+        if let Some(mut data) = self.nodes.get_async(name).await {
             let node = data.get_mut();
 
             node.disconnect().await?;
 
             if destroy {
                 node.destroy().await?;
-                self.nodes.remove_async(&*name).await;
+                self.nodes.remove_async(name).await;
             }
         }
 

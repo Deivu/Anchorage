@@ -41,11 +41,11 @@ impl Player {
     }
 
     /// Plays a track
-    pub async fn play(&self, track: String) -> Result<(), LavalinkPlayerError> {
+    pub async fn play(&self, track: &str) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
 
-        let _ = update_track.encoded.insert(Value::String(track));
+        let _ = update_track.encoded.insert(Value::String(track.to_string()));
 
         let _ = options.track.insert(update_track);
 
