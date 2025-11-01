@@ -296,6 +296,12 @@ pub struct LavalinkPlayerOptions {
     pub voice: Option<LavalinkVoice>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum EventType {
+    Player(Box<PlayerEvents>),
+    Destroyed,
+}
+
 impl LavalinkFilters {
     pub fn merge(&mut self, other: LavalinkFilters) {
         self.volume = other.volume.or(self.volume);
@@ -310,9 +316,4 @@ impl LavalinkFilters {
         self.low_pass = other.low_pass.or(self.low_pass.clone());
         self.plugin_filters = other.plugin_filters.or(self.plugin_filters.clone());
     }
-}
-
-pub enum EventType {
-    Player(Box<PlayerEvents>),
-    Destroyed,
 }
