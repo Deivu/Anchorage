@@ -57,7 +57,7 @@ pub enum LavalinkMessage {
     Ready(Ready),
     PlayerUpdate(PlayerUpdate),
     Stats(Stats),
-    Event(PlayerEvents),
+    Event(Box<PlayerEvents>),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -42,7 +42,7 @@ impl Anchorage {
     /// Creates a new instance of Anchorage
     pub fn new(mut options: Options) -> Self {
         Self {
-            user_agent: options.user_agent.unwrap_or(String::from(format!("Anchorage/{}", env!("CARGO_PKG_VERSION")))),
+            user_agent: options.user_agent.unwrap_or(format!("Anchorage/{}", env!("CARGO_PKG_VERSION"))),
             reconnect_tries: options.reconnect_tries.unwrap_or(u16::MAX),
             request: options
                 .request

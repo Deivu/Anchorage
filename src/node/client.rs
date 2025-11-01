@@ -235,7 +235,7 @@ impl NodeManager {
                 Ok(())
             }
             LavalinkMessage::Event(data) => {
-                let guild_id = match &data {
+                let guild_id = match data.as_ref() {
                     PlayerEvents::TrackStartEvent(data) => &data.guild_id,
                     PlayerEvents::TrackEndEvent(data) => &data.guild_id,
                     PlayerEvents::TrackExceptionEvent(data) => &data.guild_id,

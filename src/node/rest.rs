@@ -175,7 +175,7 @@ impl Rest {
             .request
             .post(format!("{}/routeplanner/free/address", self.url))
             .header("Content-Type", "application/json")
-            .body(format!("{{ address:{} }}", address));
+            .body(format!("{{ address:{address} }}"));
 
         self.make_request::<()>(request).await?;
 

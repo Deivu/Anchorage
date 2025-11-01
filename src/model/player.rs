@@ -313,6 +313,6 @@ impl LavalinkFilters {
 }
 
 pub enum EventType {
-    Player(PlayerEvents),
+    Player(Box<PlayerEvents>),
     Destroyed,
 }
