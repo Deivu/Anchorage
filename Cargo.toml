@@ -3,16 +3,16 @@ name = "anchorage"
 description = "A stable wrapper (Tokio-Based) around Lavalink in Rust"
 version = "0.1.0"
 edition = "2024"
-license-file = "LICENSE"
+license-file = "MIT"
 
 [dependencies]
-tracing = "^0.1.41"
-thiserror = "^2.0.12"
-tokio = { version = "1.47.1", features = ["macros"] }
-tokio-tungstenite = "^0.20.1"
-serde = "^1.0.219"
-serde_json = "^1.0.140"
-scc = "^2.3.3"
-flume = "^0.11.1"
-futures = "^0.3.31"
-reqwest = "^0.11.27"
+tracing = "^0.1.44"
+thiserror = "^2.0.18"
+tokio = { version = "1.49.0", features = ["macros"] }
+tokio-tungstenite = "^0.28.0"
+serde = "^1.0.228"
+serde_json = "^1.0.149"
+scc = "^3.6.1"
+flume = "^0.12.0"
+futures = "^0.3.32"
+reqwest = { version = "^0.13.2", features = ["query"] }

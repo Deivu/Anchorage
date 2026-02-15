@@ -103,7 +103,10 @@ impl Anchorage {
         let mut nodes = vec![];
 
         self.nodes
-            .scan_async(|_, node| nodes.push(node.clone()))
+            .iter_async(|_, node| {
+                nodes.push(node.clone());
+                false
+            })
             .await;
 
         let mut penalties: f64 = 0.0;
@@ -133,7 +136,7 @@ impl Anchorage {
     /// Gets the node where a player is connected to
     pub async fn get_node_for_player(&self, guild_id: u64) -> Option<OccupiedEntry<String, Node>> {
         self.nodes
-            .any_entry_async(|_, node| node.events_sender.contains(&guild_id))
+            .any_async(|_, node| node.events_sender.contains_sync(&guild_id))
             .await
     }
 
@@ -171,7 +174,7 @@ impl Anchorage {
 
         node.rest.destroy_player(guild_id).await?;
 
-        if let Some(sender) = node.events_sender.get(&guild_id) {
+        if let Some(sender) = node.events_sender.get_async(&guild_id).await {
             sender.send_async(EventType::Destroyed).await.ok();
         }
 

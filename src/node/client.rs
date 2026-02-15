@@ -150,8 +150,9 @@ impl NodeManager {
     /// Send destroy event on all players in this node, then clears the events cache
     async fn send_players_destroy(&mut self) {
         self.event_senders
-            .scan_async(|_, sender| {
+            .iter_async(|_, sender| {
                 sender.send(EventType::Destroyed).ok();
+                false
             })
             .await;
 
