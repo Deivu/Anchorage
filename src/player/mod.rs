@@ -151,6 +151,7 @@ impl Player {
             token: connection.token,
             endpoint: connection.endpoint,
             session_id: connection.session_id,
+            channel_id: connection.channel_id,
             connected: None,
             ping: None,
         };

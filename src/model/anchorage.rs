@@ -35,7 +35,7 @@ pub struct PlayerOptions {
 
 /// Options to be used to connect to a voice channel
 pub struct ConnectionOptions {
-    pub channel_id: Option<u64>,
+    pub channel_id: u64,
     pub endpoint: String,
     pub guild_id: u64,
     pub session_id: String,
