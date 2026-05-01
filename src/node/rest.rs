@@ -5,10 +5,10 @@ use std::result::Result;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+use crate::model::anchorage::RestOptions;
 use crate::model::error::LavalinkRestError;
 use crate::model::node::{LavalinkInfo, RoutePlanner, SessionInfo, Stats};
 use crate::model::player::{DataType, LavalinkPlayer, LavalinkPlayerOptions, Track};
-use crate::model::anchorage::RestOptions;
 
 #[derive(Clone, Debug)]
 pub struct Rest {

@@ -1,12 +1,12 @@
-use std::{result::Result, time::Duration};
 use flume::{Receiver as FlumeReceiver, Sender as FlumeSender, unbounded};
 use futures::stream::StreamExt;
+use std::{result::Result, time::Duration};
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
-use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 use tokio_tungstenite::tungstenite::Error as TungsteniteError;
 use tokio_tungstenite::tungstenite::{Message, handshake::client::Request};
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 
 use crate::model::error::LavalinkNodeError;
 use crate::model::node::LavalinkMessage;
@@ -47,7 +47,6 @@ impl ConnectionManager {
         Ok(Some(message))
     }
 }
-
 
 /// Public facing wrapper around connection manager
 pub struct Connection {

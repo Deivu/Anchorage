@@ -1,5 +1,12 @@
 #![doc = include_str!("../README.md")]
 
+use crate::model::anchorage::{
+    ConnectionOptions, NodeManagerOptions, NodeOptions, Options, PlayerOptions,
+};
+use crate::model::error::AnchorageError;
+use crate::model::player::EventType;
+use crate::node::client::Node;
+use crate::player::Player;
 use flume::Receiver;
 use reqwest::Client as ReqwestClient;
 use scc::HashMap as ConcurrentHashMap;
@@ -7,11 +14,6 @@ use scc::hash_map::OccupiedEntry;
 use std::fmt::{Debug, Formatter};
 use std::result::Result;
 use std::sync::Arc;
-use crate::model::anchorage::{Options, NodeOptions, NodeManagerOptions, PlayerOptions, ConnectionOptions};
-use crate::model::error::AnchorageError;
-use crate::model::player::EventType;
-use crate::node::client::Node;
-use crate::player::Player;
 
 pub mod model;
 pub mod node;
@@ -42,13 +44,15 @@ impl Anchorage {
     /// Creates a new instance of Anchorage
     pub fn new(mut options: Options) -> Self {
         Self {
-            user_agent: options.user_agent.unwrap_or(format!("Anchorage/{}", env!("CARGO_PKG_VERSION"))),
+            user_agent: options
+                .user_agent
+                .unwrap_or(format!("Anchorage/{}", env!("CARGO_PKG_VERSION"))),
             reconnect_tries: options.reconnect_tries.unwrap_or(u16::MAX),
             request: options
                 .request
                 .get_or_insert_with(ReqwestClient::new)
                 .to_owned(),
-            nodes: Arc::new(ConcurrentHashMap::new())
+            nodes: Arc::new(ConcurrentHashMap::new()),
         }
     }
 
@@ -67,7 +71,7 @@ impl Anchorage {
 
         for data in nodes_data {
             let info = data.into();
-            
+
             let (node, handle) = Node::new(NodeManagerOptions {
                 name: &info.name,
                 host: &info.host,
@@ -91,8 +95,6 @@ impl Anchorage {
 
                 let _ = nodes.remove_async(&name).await;
             });
-
-           
         }
 
         Ok(())
@@ -114,16 +116,16 @@ impl Anchorage {
 
         for node in nodes {
             let data = node.data().await?;
-            
+
             if selected_node.is_none() {
                 selected_node = Some(node);
                 continue;
             }
-            
+
             if penalties > data.penalties {
                 selected_node = Some(node);
             }
-            
+
             penalties = data.penalties;
         }
 

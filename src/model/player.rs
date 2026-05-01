@@ -148,6 +148,7 @@ pub struct LavalinkVoice {
     pub token: String,
     pub endpoint: String,
     pub session_id: String,
+    #[serde(deserialize_with = "str_to_u64", serialize_with = "u64_to_str")]
     pub channel_id: u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connected: Option<bool>,

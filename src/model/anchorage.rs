@@ -1,12 +1,12 @@
-use std::sync::Arc;
 use reqwest::Client;
-use tokio::sync::RwLock;
 use reqwest::Client as ReqwestClient;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use crate::node::client::Node;
 
 /// Options to initialize an internal NodeManager
-pub struct NodeManagerOptions<'a>  {
+pub struct NodeManagerOptions<'a> {
     pub name: &'a str,
     pub host: &'a str,
     pub port: u32,

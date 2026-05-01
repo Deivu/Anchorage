@@ -13,10 +13,10 @@ use tokio_tungstenite::tungstenite::handshake::client::Request;
 use tokio_tungstenite::tungstenite::handshake::client::generate_key;
 
 use crate::model::anchorage::NodeManagerOptions;
+use crate::model::anchorage::RestOptions;
 use crate::model::error::LavalinkNodeError;
 use crate::model::node::{LavalinkMessage, Stats};
 use crate::model::player::{EventType, PlayerEvents};
-use crate::model::anchorage::RestOptions;
 use crate::node::rest::Rest;
 use crate::node::websocket::Connection;
 
@@ -71,7 +71,7 @@ pub struct NodeManager {
 /// Wrapper around the websocket and command receivers for ease of usage
 pub struct NodeReceivers {
     websocket: FlumeReceiver<Result<Option<LavalinkMessage>, TungsteniteError>>,
-    command: FlumeReceiver<WebsocketCommand>
+    command: FlumeReceiver<WebsocketCommand>,
 }
 
 impl From<&NodeManager> for NodeManagerData {
