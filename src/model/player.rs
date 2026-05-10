@@ -1,6 +1,7 @@
 use super::{str_to_u64, u64_to_str};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::fmt::Display;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -316,5 +317,15 @@ impl LavalinkFilters {
         self.channel_mix = other.channel_mix.or(self.channel_mix.clone());
         self.low_pass = other.low_pass.or(self.low_pass.clone());
         self.plugin_filters = other.plugin_filters.or(self.plugin_filters.clone());
+    }
+}
+
+impl Display for Severity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Severity::Common => f.write_str("Common"),
+            Severity::Suspicious => f.write_str("Suspicious"),
+            Severity::Fault => f.write_str("Fault"),
+        }
     }
 }
