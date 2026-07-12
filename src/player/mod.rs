@@ -35,6 +35,11 @@ impl Player {
         Ok((player, events_sender, events_receiver))
     }
 
+    /// Gets the node for this player
+    pub async fn get_node(&self) -> Result<&Node, LavalinkPlayerError> {
+        Ok(&self.node)
+    }
+
     /// Gets the data of this player from lavalink
     pub async fn get_data(&self) -> Result<LavalinkPlayer, LavalinkPlayerError> {
         Ok(self.node.rest.get_player(self.guild_id).await?)
