@@ -46,7 +46,11 @@ impl Player {
     }
 
     /// Plays a track
-    pub async fn play(&self, track: &str) -> Result<(), LavalinkPlayerError> {
+    pub async fn play(
+        &self,
+        track: &str,
+        no_replace: Option<bool>,
+    ) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
 
@@ -56,13 +60,14 @@ impl Player {
 
         let _ = options.track.insert(update_track);
 
-        self.send_update_player(false, options).await?;
+        self.send_update_player(no_replace.unwrap_or(false), options)
+            .await?;
 
         Ok(())
     }
 
     /// Stops the current playback
-    pub async fn stop(&self) -> Result<(), LavalinkPlayerError> {
+    pub async fn stop(&self, no_replace: Option<bool>) -> Result<(), LavalinkPlayerError> {
         let mut options: LavalinkPlayerOptions = Default::default();
         let mut update_track: UpdatePlayerTrack = Default::default();
 
@@ -70,7 +75,8 @@ impl Player {
 
         let _ = options.track.insert(update_track);
 
-        self.send_update_player(false, options).await?;
+        self.send_update_player(no_replace.unwrap_or(false), options)
+            .await?;
 
         Ok(())
     }
